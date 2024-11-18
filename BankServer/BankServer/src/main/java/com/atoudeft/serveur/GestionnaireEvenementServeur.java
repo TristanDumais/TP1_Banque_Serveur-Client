@@ -274,7 +274,7 @@ public class GestionnaireEvenementServeur implements GestionnaireEvenement {
                     }
                     break;
 
-                case "TRANSFER": //Transfer de l'argent a un autre compte
+                 case "TRANSFER": //Transfer de l'argent a un autre compte
                     banque = serveurBanque.getBanque();
                     compteActuel = cnx.getNumeroCompteActuel();
 
@@ -287,9 +287,26 @@ public class GestionnaireEvenementServeur implements GestionnaireEvenement {
                     //Separe l'information en 2 partie
                     String[] transferArgs = evenement.getArgument().split(" ", 2);
                     if (transferArgs.length < 2) {
-                        //Car il manque d'information
-                        cnx.envoyer("TRANSFER NO");
+                        cnx.envoyer("TRANSFER NO format invalide");
                         break;
+                    }
+
+                    try {
+                        //Convertis en double pour obtenir le montant
+                        double montantTransfer = Double.parseDouble(transferArgs[0]);
+                        String numeroCompteDestinataire = transferArgs[1];
+
+                        //Essaie d'effectuer le transfer
+                        if (banque.transferer(montantTransfer, compteActuel, numeroCompteDestinataire)) {
+                            cnx.envoyer("TRANSFER OK");
+                        } else {
+                            cnx.envoyer("TRANSFER NO");
+                        }
+                    } catch (NumberFormatException e) {
+                        //Le format n'etait pas valide
+                        cnx.envoyer("TRANSFER NO format invalide");
+                    }
+                    break;
                     }
                  case "HIST" :
                     banque = serveurBanque.getBanque();
