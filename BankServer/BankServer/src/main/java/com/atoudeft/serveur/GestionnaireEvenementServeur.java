@@ -299,6 +299,13 @@ public class GestionnaireEvenementServeur implements GestionnaireEvenement {
                         //Essaie d'effectuer le transfer
                         if (banque.transferer(montantTransfer, compteActuel, numeroCompteDestinataire)) {
                             cnx.envoyer("TRANSFER OK");
+
+                            // Enregistre le transfert dans l'historique du compte
+                            CompteBancaire compte = banque.getCompteBancaire(compteActuel, "Cheque");
+                            OperationTransfer operationTransfer = new OperationTransfer(montantTransfer, numeroCompteDestinataire);
+                            compte.getHistorique().empiler(operationDepot);
+                            
+                            
                         } else {
                             cnx.envoyer("TRANSFER NO");
                         }
