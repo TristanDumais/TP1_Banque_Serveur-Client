@@ -186,6 +186,11 @@ public class GestionnaireEvenementServeur implements GestionnaireEvenement {
                         //Si l'operation a fonctionner, sa retourne true et sa envoids ... OK
                         if (banque.deposer(montantDepot, compteActuel)) {
                             cnx.envoyer("DEPOT OK");
+
+                            CompteBancaire compte = banque.getCompteBancaire(compteActuel, "Cheque");
+                            OperationDepot operationDepot = new OperationDepot(montantDepot);
+                            compte.getHistorique().empiler(operationDepot);
+                            
                         } else {
                             cnx.envoyer("DEPOT NO");
                         }
@@ -212,6 +217,13 @@ public class GestionnaireEvenementServeur implements GestionnaireEvenement {
                         //Si l'operation a fonctionner, sa retourne true et sa envoids ... OK
                         if (banque.retirer(montantRetrait, compteActuel)) {
                             cnx.envoyer("RETRAIT OK");
+
+                            // Enregistre le retrait dans l'historique du compte
+                            CompteBancaire compte = banque.getCompteBancaire(compteActuel,"Cheque");
+                            OperationRetrait operationRetrait = new OperationRetrait(montantRetrait);
+                            compte.getHistorique().empiler(operationRetrait); // empile le retrait dans l'historique
+
+                            
                         } else {
                             cnx.envoyer("RETRAIT NO");
                         }
@@ -246,6 +258,13 @@ public class GestionnaireEvenementServeur implements GestionnaireEvenement {
                         //Si l'operation a fonctionner, sa retourne true et sa envoids ... OK
                         if (banque.payerFacture(montantFacture, compteActuel, numeroFacture, description)) {
                             cnx.envoyer("FACTURE OK");
+
+                            // Enregistre le paiement de la facture dans l'historique du compte
+                            CompteBancaire compte = banque.getCompteBancaire(compteActuel, "Cheque");
+                            OperationFacture operationFacture = new OperationFacture(montantFacture, numeroFacture, description);
+                            compte.getHistorique().empiler(operationFacture);
+
+                            
                         } else {
                             cnx.envoyer("FACTURE NO");
                         }
@@ -272,6 +291,25 @@ public class GestionnaireEvenementServeur implements GestionnaireEvenement {
                         cnx.envoyer("TRANSFER NO");
                         break;
                     }
+                 case "HIST" :
+                    banque = serveurBanque.getBanque();
+                    compteActuel = cnx.getNumeroCompteActuel();
+
+                    //Verifie que le client existe
+                    if (compteActuel == null) {
+                        cnx.envoyer("HIST NO");
+                        break;
+                    }
+
+                    CompteBancaire compte = banque.getCompteBancaire(compteActuel, "Cheque");
+
+                    if (compte.getHistorique().estVide()){
+                        cnx.envoyer("HIST NO");
+                        break;
+                    }else {
+                        compte.getHistorique().afficherHistorique();
+                    }
+                    
                 case "CONNECT":
                     banque = serveurBanque.getBanque();
 
